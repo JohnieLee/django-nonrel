@@ -245,8 +245,12 @@ class AllValuesFilterSpec(FilterSpec):
         limit_choices_to = get_limit_choices_to_from_path(model, field_path)
         queryset = queryset.filter(limit_choices_to)
 
+        def uniquify(coll):  # enforce uniqueness, preserve order
+            seen = set()
+            return [x for x in coll if x not in seen and not seen.add(x)]
+
         self.lookup_choices = \
-            queryset.distinct().order_by(f.name).values_list(f.name, flat=True)
+            uniquify(queryset.order_by(f.name).values_list(f.name, flat=True))
 
     def title(self):
         return self.field.verbose_name
